@@ -39,6 +39,9 @@ dependencies:
   # qr_code_scanner: ^1.0.1
   flutter_rating_bar: ^4.0.0
   shared_preferences: ^2.5.4
+  file_picker: ^8.0.0
+  excel: ^4.0.0
+  csv: ^6.0.0
 
 dev_dependencies:
   flutter_test:
