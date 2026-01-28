@@ -27,6 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isSeedingEmployees = false;
   bool _isSeedingShops = false;
   bool _isImportingEmployees = false;
+  bool _isImportingShops = false;
 
   @override
   void dispose() {
@@ -365,6 +366,125 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _importShopsFromFile() async {
+    if (_isImportingShops) return;
+    setState(() {
+      _isImportingShops = true;
+    });
+
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: const ['csv', 'xlsx'],
+        withData: true,
+      );
+      if (result == null || result.files.isEmpty) return;
+
+      final file = result.files.first;
+      final name = file.name.toLowerCase();
+      final bytes = file.bytes;
+      if (bytes == null) throw Exception('Could not read file bytes');
+
+      final rows = <List<String>>[];
+
+      if (name.endsWith('.csv')) {
+        final csvText = utf8.decode(bytes);
+        final csvRows = const CsvToListConverter(eol: '\n').convert(csvText);
+        for (final r in csvRows) {
+          rows.add(r.map((e) => e?.toString() ?? '').toList());
+        }
+      } else if (name.endsWith('.xlsx')) {
+        final excel = Excel.decodeBytes(bytes);
+        if (excel.tables.isEmpty) throw Exception('No sheets found in file');
+        final sheet = excel.tables.values.first;
+        if (sheet == null) throw Exception('Could not read first sheet');
+        for (final r in sheet.rows) {
+          rows.add(r.map((c) => (c?.value ?? '').toString()).toList());
+        }
+      } else {
+        throw Exception('Unsupported file type. Use .csv or .xlsx');
+      }
+
+      if (rows.isEmpty) throw Exception('File has no rows');
+
+      // Header support: shopName,employeeName
+      var startIndex = 0;
+      final header = rows.first.map((e) => e.trim().toLowerCase()).toList();
+      final hasHeader =
+          header.any((c) => c.contains('shop')) && header.any((c) => c.contains('employee'));
+      if (hasHeader) startIndex = 1;
+
+      final firestore = FirebaseFirestore.instance;
+      int added = 0;
+      int skipped = 0;
+      int invalid = 0;
+
+      WriteBatch batch = firestore.batch();
+      var batchCount = 0;
+
+      Future<void> commitIfNeeded({bool force = false}) async {
+        if (batchCount == 0) return;
+        if (!force && batchCount < 450) return;
+        await batch.commit();
+        batch = firestore.batch();
+        batchCount = 0;
+      }
+
+      for (var i = startIndex; i < rows.length; i++) {
+        final row = rows[i];
+        final shopName = (row.isNotEmpty ? row[0] : '').trim();
+        final employeeName = (row.length > 1 ? row[1] : '').trim();
+
+        if (shopName.isEmpty) {
+          invalid++;
+          continue;
+        }
+
+        final shopId = shopName.toLowerCase();
+        final ref = firestore.collection('shops').doc(shopId);
+        final existing = await ref.get();
+        if (existing.exists) {
+          skipped++;
+          continue;
+        }
+
+        batch.set(ref, {
+          'shopId': shopId,
+          'shopName': shopName,
+          'shopNameLower': shopName.toLowerCase(),
+          'employeeName': employeeName,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+        batchCount++;
+        added++;
+
+        await commitIfNeeded();
+      }
+
+      await commitIfNeeded(force: true);
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Shop import complete. Added: $added, Skipped(existing): $skipped, Invalid: $invalid',
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error importing shops: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isImportingShops = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -500,6 +620,22 @@ class _HomeScreenState extends State<HomeScreen> {
                       _isImportingEmployees
                           ? 'Importing employees...'
                           : 'Import employees (CSV/XLSX)',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: _isImportingShops ? null : _importShopsFromFile,
+                    icon: _isImportingShops
+                        ? const SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.storefront_outlined),
+                    label: Text(
+                      _isImportingShops
+                          ? 'Importing shops...'
+                          : 'Import shops (CSV/XLSX)',
                     ),
                   ),
                 ],
