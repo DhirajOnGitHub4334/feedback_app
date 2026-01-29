@@ -164,189 +164,213 @@ class _FeedbackPageState extends State<FeedbackPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
-        child: Scrollbar(
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  'Email: ${widget.email}',
-                  style: Theme.of(context).textTheme.titleMedium,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                  stream: FirebaseFirestore.instance
-                      .collection('shops')
-                      .orderBy('shopNameLower')
-                      .snapshots(),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasError) {
-                      return Text(
-                        'Error loading shops: ${snapshot.error}',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.error,
-                        ),
-                      );
-                    }
-
-                    final docs = snapshot.data?.docs ?? [];
-                    final items = docs
-                        .map((d) {
-                          final data = d.data();
-                          final shopId = (data['shopId'] ?? d.id).toString();
-                          final shopName = (data['shopName'] ?? '')
-                              .toString()
-                              .trim();
-                          final employeeName = (data['employeeName'] ?? '')
-                              .toString()
-                              .trim();
-                          if (shopName.isEmpty) return null;
-                          return DropdownMenuItem<String>(
-                            value: shopId,
-                            child: Text(
-                              employeeName.isEmpty
-                                  ? shopName
-                                  : '$shopName  •  $employeeName',
+        child: Stack(
+          children: [
+            Container(
+              padding: EdgeInsets.all(20),
+              height: MediaQuery.of(context).size.height,
+              width: MediaQuery.of(context).size.width,
+              child: Image.asset(
+                "assets/images/one.png",
+                opacity: AlwaysStoppedAnimation(0.1),
+              ),
+            ),
+            Scrollbar(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'Email: ${widget.email}',
+                      style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                      stream: FirebaseFirestore.instance
+                          .collection('shops')
+                          .orderBy('shopNameLower')
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasError) {
+                          return Text(
+                            'Error loading shops: ${snapshot.error}',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
                             ),
                           );
-                        })
-                        .whereType<DropdownMenuItem<String>>()
-                        .toList();
+                        }
 
-                    return DropdownButtonFormField<String>(
-                      key: ValueKey(_selectedShopId),
-                      value: _selectedShopId,
-                      items: items,
-                      decoration: const InputDecoration(
-                        labelText: 'Shop name',
-                        border: OutlineInputBorder(),
-                      ),
-                      hint: snapshot.connectionState == ConnectionState.waiting
-                          ? const Text('Loading shops...')
-                          : const Text('Select shop'),
-                      onChanged: (value) {
-                        if (value == null) return;
-                        final selectedDoc = docs.firstWhere(
-                          (d) =>
-                              (d.data()['shopId'] ?? d.id).toString() == value,
-                          //orElse: () => docs.firstWhere((d) => d.id == value),
+                        final docs = snapshot.data?.docs ?? [];
+                        final items = docs
+                            .map((d) {
+                              final data = d.data();
+                              final shopId = (data['shopId'] ?? d.id)
+                                  .toString();
+                              final shopName = (data['shopName'] ?? '')
+                                  .toString()
+                                  .trim();
+                              final employeeName = (data['employeeName'] ?? '')
+                                  .toString()
+                                  .trim();
+                              if (shopName.isEmpty) return null;
+                              return DropdownMenuItem<String>(
+                                value: shopId,
+                                child: Text(
+                                  employeeName.isEmpty
+                                      ? shopName
+                                      : '$shopName  •  $employeeName',
+                                ),
+                              );
+                            })
+                            .whereType<DropdownMenuItem<String>>()
+                            .toList();
+
+                        return DropdownButtonFormField<String>(
+                          key: ValueKey(_selectedShopId),
+                          menuMaxHeight: 300,
+                          isDense: true,
+
+                          value: _selectedShopId,
+                          items: items,
+                          decoration: const InputDecoration(
+                            labelText: 'Shop name',
+                            border: OutlineInputBorder(),
+                          ),
+                          hint:
+                              snapshot.connectionState ==
+                                  ConnectionState.waiting
+                              ? const Text('Loading shops...')
+                              : const Text('Select shop'),
+                          onChanged: (value) {
+                            if (value == null) return;
+                            final selectedDoc = docs.firstWhere(
+                              (d) =>
+                                  (d.data()['shopId'] ?? d.id).toString() ==
+                                  value,
+                              //orElse: () => docs.firstWhere((d) => d.id == value),
+                            );
+                            final data = selectedDoc.data();
+                            setState(() {
+                              _selectedShopId =
+                                  (data['shopId'] ?? selectedDoc.id).toString();
+                              _selectedShopName = (data['shopName'] ?? '')
+                                  .toString()
+                                  .trim();
+                              _selectedEmployeeName =
+                                  (data['employeeName'] ?? '')
+                                      .toString()
+                                      .trim();
+                            });
+                          },
                         );
-                        final data = selectedDoc.data();
+                      },
+                    ),
+                    if ((_selectedEmployeeName ?? '').isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        'Employee: $_selectedEmployeeName',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                    const SizedBox(height: 16),
+                    Text(
+                      'Please rate the following:',
+                      style: Theme.of(context).textTheme.bodyLarge,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildQuestionWithStars(
+                      context,
+                      questionText:
+                          'Is the price appropriate for the quantity you receive?',
+                      currentValue: _priceRating,
+                      onChanged: (value) {
                         setState(() {
-                          _selectedShopId = (data['shopId'] ?? selectedDoc.id)
-                              .toString();
-                          _selectedShopName = (data['shopName'] ?? '')
-                              .toString()
-                              .trim();
-                          _selectedEmployeeName = (data['employeeName'] ?? '')
-                              .toString()
-                              .trim();
+                          _priceRating = value;
                         });
                       },
-                    );
-                  },
-                ),
-                if ((_selectedEmployeeName ?? '').isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    'Employee: $_selectedEmployeeName',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ],
-                const SizedBox(height: 16),
-                Text(
-                  'Please rate the following:',
-                  style: Theme.of(context).textTheme.bodyLarge,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                _buildQuestionWithStars(
-                  context,
-                  questionText:
-                      'Is the price appropriate for the quantity you receive?',
-                  currentValue: _priceRating,
-                  onChanged: (value) {
-                    setState(() {
-                      _priceRating = value;
-                    });
-                  },
-                ),
-                const SizedBox(height: 16),
-                _buildQuestionWithStars(
-                  context,
-                  questionText:
-                      'How would you rate the presentation and hygiene at the shop?',
-                  currentValue: _presentationRating,
-                  onChanged: (value) {
-                    setState(() {
-                      _presentationRating = value;
-                    });
-                  },
-                ),
-                const SizedBox(height: 16),
-                _buildQuestionWithStars(
-                  context,
-                  questionText:
-                      'How would you rate the behaviour of the staff?',
-                  currentValue: _staffBehaviorRating,
-                  onChanged: (value) {
-                    setState(() {
-                      _staffBehaviorRating = value;
-                    });
-                  },
-                ),
-                const SizedBox(height: 16),
-                _buildQuestionWithStars(
-                  context,
-                  questionText: 'How would you rate the food quality?',
-                  currentValue: _foodQualityRating,
-                  onChanged: (value) {
-                    setState(() {
-                      _foodQualityRating = value;
-                    });
-                  },
-                ),
-                const SizedBox(height: 16),
-                _buildQuestionWithStars(
-                  context,
-                  questionText: 'Overall, how would you rate your experience?',
-                  currentValue: _overallRating,
-                  onChanged: (value) {
-                    setState(() {
-                      _overallRating = value;
-                    });
-                  },
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  height: 48,
-                  child: ElevatedButton.icon(
-                    onPressed: _isSubmitting ? null : _submitFeedback,
-                    icon: _isSubmitting
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Icon(Icons.send_rounded),
-                    label: Text(
-                      _isSubmitting ? 'Submitting...' : 'Submit Feedback',
                     ),
-                  ),
+                    const SizedBox(height: 16),
+                    _buildQuestionWithStars(
+                      context,
+                      questionText:
+                          'How would you rate the presentation and hygiene at the shop?',
+                      currentValue: _presentationRating,
+                      onChanged: (value) {
+                        setState(() {
+                          _presentationRating = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    _buildQuestionWithStars(
+                      context,
+                      questionText:
+                          'How would you rate the behaviour of the staff?',
+                      currentValue: _staffBehaviorRating,
+                      onChanged: (value) {
+                        setState(() {
+                          _staffBehaviorRating = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    _buildQuestionWithStars(
+                      context,
+                      questionText: 'How would you rate the food quality?',
+                      currentValue: _foodQualityRating,
+                      onChanged: (value) {
+                        setState(() {
+                          _foodQualityRating = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    _buildQuestionWithStars(
+                      context,
+                      questionText:
+                          'Overall, how would you rate your experience?',
+                      currentValue: _overallRating,
+                      onChanged: (value) {
+                        setState(() {
+                          _overallRating = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      height: 48,
+                      child: ElevatedButton.icon(
+                        onPressed: _isSubmitting ? null : _submitFeedback,
+                        icon: _isSubmitting
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Icon(Icons.send_rounded),
+                        label: Text(
+                          _isSubmitting ? 'Submitting...' : 'Submit Feedback',
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'After submitting you can give another rating.',
+                      style: Theme.of(context).textTheme.bodySmall,
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  'After submitting you can give another rating.',
-                  style: Theme.of(context).textTheme.bodySmall,
-                  textAlign: TextAlign.center,
-                ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -361,7 +385,12 @@ class _FeedbackPageState extends State<FeedbackPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(questionText, style: Theme.of(context).textTheme.bodyMedium),
+        Text(
+          questionText,
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -375,7 +404,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
                 starIndex <= currentValue
                     ? Icons.star_rounded
                     : Icons.star_border_rounded,
-                color: Colors.amber,
+                color: Colors.red,
               ),
               onPressed: () => onChanged(starIndex),
             );

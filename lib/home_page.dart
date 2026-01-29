@@ -290,7 +290,8 @@ class _HomeScreenState extends State<HomeScreen> {
       // Header support: employeeId,email
       var startIndex = 0;
       final header = rows.first.map((e) => e.trim().toLowerCase()).toList();
-      final hasHeader = header.any((c) => c.contains('employee')) &&
+      final hasHeader =
+          header.any((c) => c.contains('employee')) &&
           header.any((c) => c.contains('email'));
       if (hasHeader) startIndex = 1;
 
@@ -354,9 +355,9 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error importing employees: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error importing employees: $e')));
     } finally {
       if (mounted) {
         setState(() {
@@ -411,7 +412,8 @@ class _HomeScreenState extends State<HomeScreen> {
       var startIndex = 0;
       final header = rows.first.map((e) => e.trim().toLowerCase()).toList();
       final hasHeader =
-          header.any((c) => c.contains('shop')) && header.any((c) => c.contains('employee'));
+          header.any((c) => c.contains('shop')) &&
+          header.any((c) => c.contains('employee'));
       if (hasHeader) startIndex = 1;
 
       final firestore = FirebaseFirestore.instance;
@@ -473,9 +475,9 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error importing shops: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error importing shops: $e')));
     } finally {
       if (mounted) {
         setState(() {
@@ -499,6 +501,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  SizedBox(
+                    height: 200,
+                    width: 200,
+                    child: Image.asset("assets/images/pay_one_red.png"),
+                  ),
                   Text(
                     'Welcome!',
                     style: Theme.of(context).textTheme.headlineMedium,
@@ -605,10 +612,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   //         : 'Create demo shop (Firestore)',
                   //   ),
                   // ),
-
                   OutlinedButton.icon(
-                    onPressed:
-                        _isImportingEmployees ? null : _importEmployeesFromFile,
+                    onPressed: _isImportingEmployees
+                        ? null
+                        : _importEmployeesFromFile,
                     icon: _isImportingEmployees
                         ? const SizedBox(
                             height: 18,

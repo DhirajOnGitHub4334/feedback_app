@@ -185,16 +185,32 @@ class LeaderboardPage extends StatelessWidget {
             ],
           ),
         ),
-        body: TabBarView(
+        body: Stack(
           children: [
-            if (currentEmail == null || currentEmail!.isEmpty)
-              const Center(child: Text('No email available to filter by user.'))
-            else
-              _buildLeaderboardList(
-                context,
-                _leaderboardStreamForEmail(currentEmail!),
+            Container(
+              padding: EdgeInsets.all(20),
+              height: MediaQuery.of(context).size.height,
+              width: MediaQuery.of(context).size.width,
+              child: Image.asset(
+                "assets/images/one.png",
+                opacity: AlwaysStoppedAnimation(0.1),
               ),
-            _buildLeaderboardList(context, _leaderboardStreamAll()),
+            ),
+
+            TabBarView(
+              children: [
+                if (currentEmail == null || currentEmail!.isEmpty)
+                  const Center(
+                    child: Text('No email available to filter by user.'),
+                  )
+                else
+                  _buildLeaderboardList(
+                    context,
+                    _leaderboardStreamForEmail(currentEmail!),
+                  ),
+                _buildLeaderboardList(context, _leaderboardStreamAll()),
+              ],
+            ),
           ],
         ),
       ),

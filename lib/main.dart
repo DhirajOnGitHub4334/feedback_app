@@ -54,7 +54,22 @@ class MyApp extends StatelessWidget {
       title: 'Feedback App',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
+        primaryColor: Colors.red,
+
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ButtonStyle(
+            backgroundColor: WidgetStatePropertyAll(Colors.red),
+            foregroundColor: WidgetStatePropertyAll(Colors.white),
+            iconColor: WidgetStatePropertyAll(Colors.white),
+            shape: WidgetStatePropertyAll(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadiusGeometry.circular(10),
+              ),
+            ),
+          ),
+        ),
+
         useMaterial3: true,
       ),
       home: FutureBuilder<String?>(
@@ -83,7 +98,9 @@ class MyApp extends StatelessWidget {
               final isRegistered = regSnap.data ?? false;
               if (!isRegistered) {
                 // Clear cached email so user must enter a valid Pay1 email again.
-                SharedPreferences.getInstance().then((p) => p.remove('user_email'));
+                SharedPreferences.getInstance().then(
+                  (p) => p.remove('user_email'),
+                );
                 return const HomeScreen();
               }
 
