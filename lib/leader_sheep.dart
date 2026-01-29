@@ -16,9 +16,9 @@ class LeaderboardPage extends StatelessWidget {
         .where('overallRating', isGreaterThan: 0)
         .snapshots()
         .map((snapshot) {
-      log("Getting All Shops Data List : ${snapshot.docs.length}");
-      return _mapSnapshotToEntries(snapshot);
-    });
+          log("Getting All Shops Data List : ${snapshot.docs.length}");
+          return _mapSnapshotToEntries(snapshot);
+        });
   }
 
   Stream<List<_ShopLeaderboardEntry>> _leaderboardStreamForEmail(String email) {
@@ -112,7 +112,7 @@ class LeaderboardPage extends StatelessWidget {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Text(
+              child: SelectableText(
                 'Error loading leaderboard: ${snapshot.error}',
                 textAlign: TextAlign.center,
               ),
