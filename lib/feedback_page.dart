@@ -68,12 +68,12 @@ class _FeedbackPageState extends State<FeedbackPage> {
 
     // 1) Keep a unique list of shops (one doc per shop).
     // Structure: shops/{shopId}
-    await firestore.collection('shops').doc(shopId).set({
-      'shopId': shopId,
-      'shopName': shopName,
-      'shopNameLower': shopName.toLowerCase(),
-      'updatedAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+    // await firestore.collection('shops').doc(shopId).set({
+    //   'shopId': shopId,
+    //   'shopName': shopName,
+    //   'shopNameLower': shopName.toLowerCase(),
+    //   'updatedAt': FieldValue.serverTimestamp(),
+    // }, SetOptions(merge: true));
 
     // 2) Store user feedback (one doc per email per shop).
     // Structure: feedbackByUser/{email}/shops/{shopId}
@@ -86,7 +86,10 @@ class _FeedbackPageState extends State<FeedbackPage> {
   }
 
   Future<void> _submitFeedback() async {
-    if ((_selectedShopId ?? '').trim().isEmpty) {
+    final selectedShopId = _selectedShopId;
+    // final selectedShopName = _selectedShopName;
+
+    if ((selectedShopId ?? '').isEmpty) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Please select a shop')));
@@ -181,7 +184,9 @@ class _FeedbackPageState extends State<FeedbackPage> {
                     if (snapshot.hasError) {
                       return Text(
                         'Error loading shops: ${snapshot.error}',
-                        style: TextStyle(color: Theme.of(context).colorScheme.error),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
                       );
                     }
 
@@ -190,10 +195,12 @@ class _FeedbackPageState extends State<FeedbackPage> {
                         .map((d) {
                           final data = d.data();
                           final shopId = (data['shopId'] ?? d.id).toString();
-                          final shopName =
-                              (data['shopName'] ?? '').toString().trim();
-                          final employeeName =
-                              (data['employeeName'] ?? '').toString().trim();
+                          final shopName = (data['shopName'] ?? '')
+                              .toString()
+                              .trim();
+                          final employeeName = (data['employeeName'] ?? '')
+                              .toString()
+                              .trim();
                           if (shopName.isEmpty) return null;
                           return DropdownMenuItem<String>(
                             value: shopId,
@@ -208,6 +215,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
                         .toList();
 
                     return DropdownButtonFormField<String>(
+                      key: ValueKey(_selectedShopId),
                       value: _selectedShopId,
                       items: items,
                       decoration: const InputDecoration(
@@ -220,17 +228,20 @@ class _FeedbackPageState extends State<FeedbackPage> {
                       onChanged: (value) {
                         if (value == null) return;
                         final selectedDoc = docs.firstWhere(
-                          (d) => (d.data()['shopId'] ?? d.id).toString() == value,
-                          orElse: () => docs.firstWhere((d) => d.id == value),
+                          (d) =>
+                              (d.data()['shopId'] ?? d.id).toString() == value,
+                          //orElse: () => docs.firstWhere((d) => d.id == value),
                         );
                         final data = selectedDoc.data();
                         setState(() {
-                          _selectedShopId =
-                              (data['shopId'] ?? selectedDoc.id).toString();
-                          _selectedShopName =
-                              (data['shopName'] ?? '').toString().trim();
-                          _selectedEmployeeName =
-                              (data['employeeName'] ?? '').toString().trim();
+                          _selectedShopId = (data['shopId'] ?? selectedDoc.id)
+                              .toString();
+                          _selectedShopName = (data['shopName'] ?? '')
+                              .toString()
+                              .trim();
+                          _selectedEmployeeName = (data['employeeName'] ?? '')
+                              .toString()
+                              .trim();
                         });
                       },
                     );
