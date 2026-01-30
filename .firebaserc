@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "staging": "feedbackapp-ff61c",
+    "default": "feedbackapp-ff61c"
+  },
+  "targets": {},
+  "etags": {}
+}

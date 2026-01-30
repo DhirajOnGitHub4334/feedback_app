@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:csv/csv.dart';
@@ -56,6 +57,8 @@ class _HomeScreenState extends State<HomeScreen> {
         .limit(1)
         .get();
     if (byLower.docs.isNotEmpty) return true;
+
+    log("Total Employee Data : ${byLower.docs.length}");
 
     // Backward compatible fallback if you only stored `email` (case sensitive).
     final byEmailExact = await FirebaseFirestore.instance
@@ -144,6 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     } catch (e) {
       if (!mounted) return;
+      log("Error : $e");
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error checking employee: $e')));
@@ -582,24 +586,26 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 12),
 
                   // OutlinedButton.icon(
-                  //   onPressed: _isSeedingEmployees ? null : _seedTestEmployees,
-                  //   icon: _isSeedingEmployees
+                  //   onPressed: _isImportingEmployees
+                  //       ? null
+                  //       : _importEmployeesFromFile,
+                  //   icon: _isImportingEmployees
                   //       ? const SizedBox(
                   //           height: 18,
                   //           width: 18,
                   //           child: CircularProgressIndicator(strokeWidth: 2),
                   //         )
-                  //       : const Icon(Icons.cloud_upload_outlined),
+                  //       : const Icon(Icons.upload_file_outlined),
                   //   label: Text(
-                  //     _isSeedingEmployees
-                  //         ? 'Adding test employees...'
-                  //         : 'Create test employees (Firestore)',
+                  //     _isImportingEmployees
+                  //         ? 'Importing employees...'
+                  //         : 'Import employees (CSV/XLSX)',
                   //   ),
                   // ),
-
+                  // const SizedBox(height: 12),
                   // OutlinedButton.icon(
-                  //   onPressed: _isSeedingShops ? null : _seedDemoShop,
-                  //   icon: _isSeedingShops
+                  //   onPressed: _isImportingShops ? null : _importShopsFromFile,
+                  //   icon: _isImportingShops
                   //       ? const SizedBox(
                   //           height: 18,
                   //           width: 18,
@@ -607,44 +613,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   //         )
                   //       : const Icon(Icons.storefront_outlined),
                   //   label: Text(
-                  //     _isSeedingShops
-                  //         ? 'Adding demo shop...'
-                  //         : 'Create demo shop (Firestore)',
+                  //     _isImportingShops
+                  //         ? 'Importing shops...'
+                  //         : 'Import shops (CSV/XLSX)',
                   //   ),
                   // ),
-                  OutlinedButton.icon(
-                    onPressed: _isImportingEmployees
-                        ? null
-                        : _importEmployeesFromFile,
-                    icon: _isImportingEmployees
-                        ? const SizedBox(
-                            height: 18,
-                            width: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.upload_file_outlined),
-                    label: Text(
-                      _isImportingEmployees
-                          ? 'Importing employees...'
-                          : 'Import employees (CSV/XLSX)',
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  OutlinedButton.icon(
-                    onPressed: _isImportingShops ? null : _importShopsFromFile,
-                    icon: _isImportingShops
-                        ? const SizedBox(
-                            height: 18,
-                            width: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.storefront_outlined),
-                    label: Text(
-                      _isImportingShops
-                          ? 'Importing shops...'
-                          : 'Import shops (CSV/XLSX)',
-                    ),
-                  ),
                 ],
               ),
             ),
