@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:feedback_app/leader_sheep.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -148,17 +149,17 @@ class _FeedbackPageState extends State<FeedbackPage> {
         title: const Text('Give Feedback'),
         centerTitle: true,
         actions: [
-          // IconButton(
-          //   icon: const Icon(Icons.leaderboard),
-          //   tooltip: 'View leaderboard',
-          //   onPressed: () {
-          //     Navigator.of(context).push(
-          //       MaterialPageRoute(
-          //         builder: (_) => LeaderboardPage(currentEmail: widget.email),
-          //       ),
-          //     );
-          //   },
-          // ),
+          IconButton(
+            icon: const Icon(Icons.leaderboard),
+            tooltip: 'View leaderboard',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => LeaderboardPage(currentEmail: widget.email),
+                ),
+              );
+            },
+          ),
         ],
       ),
       body: Padding(

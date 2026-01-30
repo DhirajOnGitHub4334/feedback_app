@@ -585,39 +585,39 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  // OutlinedButton.icon(
-                  //   onPressed: _isImportingEmployees
-                  //       ? null
-                  //       : _importEmployeesFromFile,
-                  //   icon: _isImportingEmployees
-                  //       ? const SizedBox(
-                  //           height: 18,
-                  //           width: 18,
-                  //           child: CircularProgressIndicator(strokeWidth: 2),
-                  //         )
-                  //       : const Icon(Icons.upload_file_outlined),
-                  //   label: Text(
-                  //     _isImportingEmployees
-                  //         ? 'Importing employees...'
-                  //         : 'Import employees (CSV/XLSX)',
-                  //   ),
-                  // ),
-                  // const SizedBox(height: 12),
-                  // OutlinedButton.icon(
-                  //   onPressed: _isImportingShops ? null : _importShopsFromFile,
-                  //   icon: _isImportingShops
-                  //       ? const SizedBox(
-                  //           height: 18,
-                  //           width: 18,
-                  //           child: CircularProgressIndicator(strokeWidth: 2),
-                  //         )
-                  //       : const Icon(Icons.storefront_outlined),
-                  //   label: Text(
-                  //     _isImportingShops
-                  //         ? 'Importing shops...'
-                  //         : 'Import shops (CSV/XLSX)',
-                  //   ),
-                  // ),
+                  OutlinedButton.icon(
+                    onPressed: _isImportingEmployees
+                        ? null
+                        : _importEmployeesFromFile,
+                    icon: _isImportingEmployees
+                        ? const SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.upload_file_outlined),
+                    label: Text(
+                      _isImportingEmployees
+                          ? 'Importing employees...'
+                          : 'Import employees (CSV/XLSX)',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: _isImportingShops ? null : _importShopsFromFile,
+                    icon: _isImportingShops
+                        ? const SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.storefront_outlined),
+                    label: Text(
+                      _isImportingShops
+                          ? 'Importing shops...'
+                          : 'Import shops (CSV/XLSX)',
+                    ),
+                  ),
                 ],
               ),
             ),
